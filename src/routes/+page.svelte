@@ -406,38 +406,40 @@
       {/each}
     </div>
 
-    <div class="absolute bottom-0 w-full z-20 pb-8">
+    <div class="absolute bottom-0 w-full z-20 pb-4">
       <form
-        class="bg-white p-6 shadow-lg max-w-2xl mx-auto flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 rounded-lg"
+        class="bg-white bg-opacity-80 p-4 sm:p-6 shadow-lg max-w-lg md:max-w-2xl mx-auto flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0 rounded-lg"
       >
         <div class="flex-1">
           <label
             for="checkin"
-            class="block text-gray-700 text-sm font-medium mb-1"
+            class="block text-gray-700 text-xs sm:text-sm font-medium mb-1"
             >Tanggal Check-in</label
           >
           <input
             type="date"
             id="checkin"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200"
+            class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200 text-sm"
           />
         </div>
+
         <div class="flex-1">
           <label
             for="checkout"
-            class="block text-gray-700 text-sm font-medium mb-1"
+            class="block text-gray-700 text-xs sm:text-sm font-medium mb-1"
             >Tanggal Check-out</label
           >
           <input
             type="date"
             id="checkout"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200"
+            class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200 text-sm"
           />
         </div>
+
         <div class="flex-1">
           <label
             for="guests"
-            class="block text-gray-700 text-sm font-medium mb-1"
+            class="block text-gray-700 text-xs sm:text-sm font-medium mb-1"
             >Jumlah Tamu</label
           >
           <input
@@ -445,15 +447,17 @@
             id="guests"
             min="1"
             value="1"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200"
+            class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200 text-sm"
           />
         </div>
+
         <div class="flex-shrink-0 flex items-end">
           <button
             type="submit"
-            class="w-full md:w-auto bg-indigo-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-indigo-700 transition-colors duration-300"
-            >Cari Kamar</button
+            class="w-full md:w-auto bg-indigo-600 text-white px-3 py-1 sm:px-6 sm:py-2 rounded-md text-sm sm:text-base font-semibold hover:bg-indigo-700 transition-colors duration-300"
           >
+            Cari Kamar
+          </button>
         </div>
       </form>
     </div>
