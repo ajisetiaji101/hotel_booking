@@ -121,27 +121,29 @@
         customer_details: customerDetails,
       };
 
-      // const apiKey = "";
-      // const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+      const apiUrl = `http://10.8.0.1:8080/api/files/midtrans`;
 
-      // const apiResponse = await fetch(apiUrl, {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({
-      //     contents: [
-      //       {
-      //         parts: [
-      //           {
-      //             text: `Generate a Midtrans Snap Token for the following booking: ${JSON.stringify(payload)}`,
-      //           },
-      //         ],
-      //       },
-      //     ],
-      //   }),
-      // });
+      const apiResponse = await fetch(apiUrl + "?gross_amount=" + grossAmount, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: `Generate a Midtrans Snap Token for the following booking: ${JSON.stringify(payload)}`,
+                },
+              ],
+            },
+          ],
+        }),
+      });
 
-      // const result = await apiResponse.json();
-      const snapToken = "66e4fa55-fdac-4ef9-91b5-733b97d1b862";
+      const result = await apiResponse.json();
+
+      console.log("data hit", result);
+
+      const snapToken = result.data;
 
       if (snapToken && browser) {
         // Memastikan kode hanya berjalan di browser
