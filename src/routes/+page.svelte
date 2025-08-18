@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { or } from "firebase/firestore";
   import { onMount, onDestroy } from "svelte";
 
   const hotelName = "SUNGAI MUSI HOTEL";
@@ -264,6 +265,15 @@
           >Testimoni</a
         >
       </div>
+      <button
+        on:click={order}
+        class="md:block hidden bg-indigo-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-indigo-700 transition-colors duration-300 z-50 {showFloatingButton
+          ? 'opacity-100'
+          : 'opacity-0 pointer-events-none'}"
+      >
+        Pesan Sekarang
+      </button>
+
       <!-- Tombol pesan sekarang dihilangkan dari navbar utama -->
       <div class="md:hidden">
         <button
