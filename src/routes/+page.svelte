@@ -838,6 +838,7 @@
   class="fixed bottom-0 left-0 w-full bg-indigo-600 text-white px-5 py-4 font-semibold hover:bg-indigo-700 transition-opacity duration-300 shadow-lg z-40 md:hidden {showFloatingButton
     ? 'opacity-100'
     : 'opacity-0 pointer-events-none'}"
+  style="font-family: 'Futura PT', sans-serif;"
   on:click={order}
 >
   Pesan Kamar
