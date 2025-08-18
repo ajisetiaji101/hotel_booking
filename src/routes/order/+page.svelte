@@ -141,7 +141,7 @@
       // });
 
       // const result = await apiResponse.json();
-      const snapToken = "tess";
+      const snapToken = "66e4fa55-fdac-4ef9-91b5-733b97d1b862";
 
       if (snapToken && browser) {
         // Memastikan kode hanya berjalan di browser
@@ -192,17 +192,12 @@
       let script: HTMLScriptElement = document.createElement("script");
       script.src = midtransScriptUrl;
       // GANTI 'YOUR_CLIENT_KEY' dengan kunci klien Midtrans Anda yang sebenarnya
-      script.setAttribute("data-client-key", "YOUR_CLIENT_KEY");
+      script.setAttribute("data-client-key", "SB-Mid-client-i-ynxgOPgCVtDkRt");
       document.body.appendChild(script);
 
       return () => {
         document.body.removeChild(script);
       };
-
-      var payButton = document.getElementById("pay-button");
-      payButton.addEventListener("click", function () {
-        snap.pay("<SNAP_TOKEN>");
-      });
     }
   });
 </script>
