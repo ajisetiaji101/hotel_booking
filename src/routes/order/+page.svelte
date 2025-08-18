@@ -121,7 +121,7 @@
         customer_details: customerDetails,
       };
 
-      const apiUrl = `http://10.8.0.1:8080/api/files/midtrans`;
+      const apiUrl = `https://api.smarlabs.biz.id/api/files/midtrans`;
 
       const apiResponse = await fetch(apiUrl + "?gross_amount=" + grossAmount, {
         method: "POST",
