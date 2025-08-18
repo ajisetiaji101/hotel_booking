@@ -682,7 +682,7 @@
     </div>
   </section>
 
-  <section id="gallery" class="py-20 bg-gray-50 min-h-screen flex items-center">
+  <section id="destination" class="py-20 bg-gray-50">
     <div class="container mx-auto px-4">
       <h2
         class="text-3xl md:text-4xl font-bold text-center text-indigo-700 mb-4"
@@ -692,18 +692,22 @@
       <p class="text-lg text-gray-600 mb-8 text-center">
         Jelajahi keindahan alam dan budaya di sekitar hotel kami.
       </p>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+      <div
+        class="flex overflow-x-scroll snap-x snap-mandatory space-x-4 pb-4 scrollbar-hide"
+      >
         {#each destinasiImages as image}
-          <div class="overflow-hidden">
-            <img
-              src={image.imageUrl}
-              alt="Galeri Hotel"
-              class="w-full h-96 object-cover transition-transform duration-300 hover:scale-105"
-            />
-            <div class="p-4">
-              <h3 class="text-xl font-semibold text-gray-800 mb-2 text-center">
-                {image.name}
-              </h3>
+          <div class="flex-none w-3/4 md:w-1/2 lg:w-1/3 snap-center">
+            <div class="overflow-hidden rounded-lg shadow-lg">
+              <img
+                src={image.imageUrl}
+                alt="Galeri Hotel"
+                class="w-full h-72 md:h-96 object-cover transition-transform duration-300 hover:scale-105"
+              />
+              <div class="p-4 bg-white">
+                <h3 class="text-xl font-semibold text-gray-800 text-center">
+                  {image.name}
+                </h3>
+              </div>
             </div>
           </div>
         {/each}
@@ -956,5 +960,13 @@
   @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
   body {
     font-family: "Inter", sans-serif;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
   }
 </style>
