@@ -599,7 +599,7 @@
               </button>
               <button
                 class="flex-1 bg-gray-300 text-gray-800 py-2 rounded-full font-semibold hover:bg-gray-400 transition duration-300"
-                on:click={() => showDetails(room)}
+                on:click={() => openBooking(room)}
               >
                 Detail
               </button>
