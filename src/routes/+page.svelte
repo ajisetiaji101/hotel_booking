@@ -444,7 +444,7 @@
 
     <div class="absolute bottom-0 w-full z-20 pb-4">
       <form
-        class="bg-white bg-opacity-80 p-4 sm:p-6 shadow-lg max-w-lg md:max-w-2xl mx-auto flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0 rounded-lg"
+        class="bg-white bg-opacity-80 p-4 sm:p-6 shadow-lg max-w-lg md:max-w-2xl mx-auto flex flex-col md:flex-row md:space-x-4 space-y-3 md:space-y-0"
       >
         <div class="flex-1">
           <label
@@ -526,7 +526,7 @@
           </div>
         </div>
         <div
-          class="rounded-xl overflow-hidden shadow-lg transform transition-transform duration-300 hover:scale-105"
+          class="overflow-hidden shadow-lg transform transition-transform duration-300 hover:scale-105"
           transition:fade
         >
           <img
@@ -552,7 +552,7 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-2">
         {#each amenities as amenity}
           <div
-            class="p-2 rounded-xl text-center transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl"
+            class="p-2 text-center transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl"
           >
             <img src={amenity.icon} alt={amenity.name} class="mx-auto mb-4" />
             <h3 class="text-xl font-semibold text-gray-800 mb-2">
@@ -570,20 +570,21 @@
       <h2
         class="text-3xl md:text-4xl font-bold text-center text-indigo-700 mb-8"
       >
-        Kunjungi dan Rasakan Sungai Musi Hotel
+        Pilihan Kamar Kami
       </h2>
       <p class="text-lg text-gray-600 mb-8 text-center">
-        Temukan kenyamanan dan kemewahan di setiap sudut hotel kami.
+        Pilih dari berbagai jenis kamar yang dirancang untuk kenyamanan dan
+        relaksasi Anda.
       </p>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {#each roomList as room}
           <div
-            class="bg-gray-100 p-6 rounded-xl shadow-lg transition-transform duration-300 hover:scale-105"
+            class="p-6 shadow-sm transition-transform duration-300 hover:scale-105"
           >
             <img
               src={room.imageUrl}
               alt={room.name}
-              class="w-full h-48 object-cover rounded-lg mb-4"
+              class="w-full h-60 object-cover mb-4"
             />
             <h3 class="text-2xl font-bold text-gray-800 mb-2">{room.name}</h3>
             <p class="text-gray-600 mb-4">{room.description}</p>
@@ -626,12 +627,12 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {#each meetingRooms as room}
           <div
-            class="bg-white p-6 rounded-xl shadow-lg transition-transform duration-300 hover:scale-105"
+            class="bg-white p-6 shadow-sm transition-transform duration-300 hover:scale-105"
           >
             <img
               src={room.imageUrl}
               alt={room.name}
-              class="w-full h-48 object-cover rounded-lg mb-4"
+              class="w-full h-48 object-cover mb-4"
             />
             <h3 class="text-2xl font-bold text-gray-800 mb-2">{room.name}</h3>
             <p class="text-gray-600 mb-4">{room.description}</p>
@@ -647,7 +648,7 @@
               </button>
               <button
                 class="flex-1 bg-gray-300 text-gray-800 py-2 rounded-full font-semibold hover:bg-gray-400 transition duration-300"
-                on:click={() => showDetails(room)}
+                on:click={() => openBooking(room)}
               >
                 Detail
               </button>
@@ -670,7 +671,7 @@
       </p>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
         {#each galleryImages as image}
-          <div class="overflow-hidden rounded-lg shadow-md">
+          <div class="overflow-hidden shadow-md">
             <img
               src={image}
               alt="Galeri Hotel"
@@ -697,7 +698,7 @@
       >
         {#each destinasiImages as image}
           <div class="flex-none w-3/4 md:w-1/2 lg:w-1/3 snap-center">
-            <div class="overflow-hidden rounded-lg shadow-lg">
+            <div class="overflow-hidden">
               <img
                 src={image.imageUrl}
                 alt="Galeri Hotel"
@@ -843,7 +844,7 @@
             Jalan Serene Indah No. 123<br />
             Jakarta, Indonesia<br />
             <br />
-            Email: info@sereneretreat.com<br />
+            Email: smarlabsgroup@gmail.com<br />
             Telp: (021) 123-4567
           </p>
           <div class="mt-4 flex justify-center md:justify-start space-x-4">
