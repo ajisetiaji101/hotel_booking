@@ -2,6 +2,8 @@
   import { goto } from "$app/navigation";
   import { or } from "firebase/firestore";
   import { onMount, onDestroy } from "svelte";
+  // Impor transisi fade dari Svelte
+  import { fade } from "svelte/transition";
 
   const hotelName = "SUNGAI MUSI HOTEL";
   const tagline = "Tempat peristirahatan Anda jauh dari hiruk pikuk kota.";
@@ -105,6 +107,39 @@
     "https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?q=80&w=1170&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1556742393-d75f468bfcb0?q=80&w=1170&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1625244724120-1fd1d34d00f6?q=80&w=1170&auto=format&fit=crop",
+  ];
+
+  const destinasiImages = [
+    {
+      name: "Kampoeng Malaka",
+      imageUrl:
+        "https://www.meliohotels.com/storage/destination/img-20231122100103-8970.jpg",
+    },
+    {
+      name: "Tugu Kujur",
+      imageUrl:
+        "https://www.meliohotels.com/storage/destination/img-20231122100218-5398.jpg",
+    },
+    {
+      name: "Danau Shuji",
+      imageUrl:
+        "https://www.meliohotels.com/storage/destination/img-20231121133020-1733.png",
+    },
+    {
+      name: "Air Terjun Bedegung",
+      imageUrl:
+        "https://www.meliohotels.com/storage/destination/img-20231121133728-2637.png",
+    },
+    {
+      name: "Museum Batubara Bukit Asam",
+      imageUrl:
+        "https://www.meliohotels.com/storage/destination/img-20231121134143-9987.png",
+    },
+    {
+      name: "Plumeria Eco Park Muara Enim",
+      imageUrl:
+        "https://www.meliohotels.com/storage/destination/img-20231121134833-9148.png",
+    },
   ];
 
   const carouselImages = [
@@ -299,10 +334,11 @@
     </div>
   </nav>
 
-  <!-- Tambahkan menu seluler -->
+  <!-- Tambahkan menu seluler dengan transisi fade -->
   {#if isMobileMenuOpen}
     <div
       class="fixed top-0 left-0 w-full h-screen bg-white z-[51] transition-transform transform ease-in-out duration-300"
+      transition:fade={{ duration: 300 }}
     >
       <div class="flex justify-end p-4">
         <button
@@ -491,6 +527,7 @@
         </div>
         <div
           class="rounded-xl overflow-hidden shadow-lg transform transition-transform duration-300 hover:scale-105"
+          transition:fade
         >
           <img
             src="https://images.unsplash.com/photo-1568229988520-4bc288da81f7?q=80&w=735&auto=format&fit=crop"
@@ -631,7 +668,7 @@
       <p class="text-lg text-gray-600 mb-8 text-center">
         Lihat keindahan hotel kami melalui galeri foto.
       </p>
-      <div class="grid grid-cols-2 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
         {#each galleryImages as image}
           <div class="overflow-hidden rounded-lg shadow-md">
             <img
@@ -639,6 +676,35 @@
               alt="Galeri Hotel"
               class="w-full object-cover transition-transform duration-300 hover:scale-105"
             />
+          </div>
+        {/each}
+      </div>
+    </div>
+  </section>
+
+  <section id="gallery" class="py-20 bg-gray-50 min-h-screen flex items-center">
+    <div class="container mx-auto px-4">
+      <h2
+        class="text-3xl md:text-4xl font-bold text-center text-indigo-700 mb-4"
+      >
+        Destinasi Keindahan
+      </h2>
+      <p class="text-lg text-gray-600 mb-8 text-center">
+        Jelajahi keindahan alam dan budaya di sekitar hotel kami.
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+        {#each destinasiImages as image}
+          <div class="overflow-hidden">
+            <img
+              src={image.imageUrl}
+              alt="Galeri Hotel"
+              class="w-full h-96 object-cover transition-transform duration-300 hover:scale-105"
+            />
+            <div class="p-4">
+              <h3 class="text-xl font-semibold text-gray-800 mb-2 text-center">
+                {image.name}
+              </h3>
+            </div>
           </div>
         {/each}
       </div>
@@ -685,9 +751,7 @@
       </p>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         {#each testimonials as testimonial}
-          <div
-            class="bg-gray-100 p-8 rounded-xl shadow-lg flex flex-col items-center text-center"
-          >
+          <div class="p-8 flex flex-col items-center text-center">
             <img
               src={testimonial.avatar}
               alt={testimonial.name}
@@ -838,23 +902,27 @@
 
 <!-- Tombol "Pesan Kamar" yang tetap di bagian bawah layar untuk mobile -->
 <!-- Tambahkan transisi visibilitas -->
-<button
-  class="fixed bottom-0 left-0 w-full bg-indigo-600 text-white px-5 py-4 font-semibold hover:bg-indigo-700 transition-opacity duration-300 shadow-lg z-40 md:hidden {showFloatingButton
-    ? 'opacity-100'
-    : 'opacity-0 pointer-events-none'}"
-  style="font-family: 'Futura PT', sans-serif;"
-  on:click={order}
->
-  Pesan Kamar
-</button>
+{#if showFloatingButton}
+  <button
+    class="fixed bottom-0 left-0 w-full bg-indigo-600 text-white px-5 py-4 font-semibold hover:bg-indigo-700 transition-opacity duration-300 shadow-lg z-40 md:hidden"
+    style="font-family: 'Futura PT', sans-serif;"
+    on:click={order}
+    transition:fade={{ duration: 500 }}
+  >
+    Pesan Kamar
+  </button>
+{/if}
 
+<!-- Gunakan if-block untuk transisi fade pada pop-up pesan -->
 {#if showMessage}
   <div
     class="fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity"
     on:click={() => (showMessage = false)}
+    transition:fade={{ duration: 300 }}
   ></div>
   <div
     class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-xl shadow-2xl z-50 text-center max-w-sm w-full"
+    transition:fade={{ duration: 300 }}
   >
     <p class="text-lg text-gray-700 mb-6">{messageContent}</p>
     <button
@@ -864,13 +932,16 @@
   </div>
 {/if}
 
+<!-- Gunakan if-block untuk transisi fade pada modal detail -->
 {#if showModal}
   <div
     class="fixed inset-0 bg-black bg-opacity-50 z-50 transition-opacity"
     on:click={() => (showModal = false)}
+    transition:fade={{ duration: 300 }}
   ></div>
   <div
     class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-8 rounded-xl shadow-2xl z-50 text-center max-w-sm w-full"
+    transition:fade={{ duration: 300 }}
   >
     <h3 class="text-2xl font-bold text-gray-800 mb-4">{modalTitle}</h3>
     <p class="text-md text-gray-600 mb-6">{modalContent}</p>

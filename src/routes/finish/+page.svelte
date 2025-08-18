@@ -359,16 +359,6 @@
                 class="h-12 rounded-xl border border-gray-300 hover:bg-gray-100 transition grid place-items-center font-medium"
                 >Kembali ke Beranda</a
             >
-            <a
-                href="/explore"
-                class="h-12 rounded-xl border border-gray-300 hover:bg-gray-100 transition grid place-items-center font-medium"
-                >Jelajah Destinasi</a
-            >
-            <a
-                href="/support"
-                class="h-12 rounded-xl bg-gray-900 text-white hover:opacity-90 transition grid place-items-center font-semibold"
-                >Butuh Bantuan?</a
-            >
         </div>
     </div>
 </div>
