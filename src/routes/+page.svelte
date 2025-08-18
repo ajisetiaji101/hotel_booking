@@ -142,6 +142,9 @@
   // Tambahkan variabel untuk mengelola status menu seluler
   let isMobileMenuOpen = false;
 
+  // Tambahkan variabel untuk mengontrol visibilitas tombol mengambang
+  let showFloatingButton = false;
+
   function openBooking(item: any) {
     messageContent = `Anda telah memilih ${item.name}. Ini adalah placeholder untuk pemesanan.`;
     showMessage = true;
@@ -158,26 +161,55 @@
     isMobileMenuOpen = false;
   }
 
+  // Fungsi untuk menangani acara gulir
+  function handleScroll() {
+    // Memastikan kode hanya berjalan di browser
+    if (typeof window !== "undefined" && typeof document !== "undefined") {
+      const heroSection = document.getElementById("hero");
+      if (heroSection) {
+        const heroHeight = heroSection.offsetHeight;
+        if (window.scrollY > heroHeight - 100) {
+          // Muncul sebelum heroSection selesai
+          showFloatingButton = true;
+        } else {
+          showFloatingButton = false;
+        }
+      }
+    }
+  }
+
   let activeIndex = 0;
   let autoSlide: any;
 
   function startAutoSlide() {
-    autoSlide = setInterval(() => {
-      // Perbaikan: Gunakan carouselImages.length di sini
-      activeIndex = (activeIndex + 1) % carouselImages.length;
-    }, 5000); // Ganti gambar setiap 5 detik
+    if (typeof window !== "undefined") {
+      autoSlide = setInterval(() => {
+        // Perbaikan: Gunakan carouselImages.length di sini
+        activeIndex = (activeIndex + 1) % carouselImages.length;
+      }, 5000); // Ganti gambar setiap 5 detik
+    }
   }
 
   function stopAutoSlide() {
-    clearInterval(autoSlide);
+    if (typeof window !== "undefined") {
+      clearInterval(autoSlide);
+    }
   }
 
   onMount(() => {
     startAutoSlide();
+    // Tambahkan event listener saat komponen dipasang
+    if (typeof window !== "undefined") {
+      window.addEventListener("scroll", handleScroll);
+    }
   });
 
   onDestroy(() => {
     stopAutoSlide();
+    // Hapus event listener saat komponen dihancurkan
+    if (typeof window !== "undefined") {
+      window.removeEventListener("scroll", handleScroll);
+    }
   });
 
   function order() {
@@ -660,7 +692,7 @@
   <a
     href="https://wa.me/628123456789?text=Halo%2C%20saya%20tertarik%20dengan%20The%20Serene%20Retreat.%20Bisa%20berikan%20informasi%20lebih%20lanjut%3F"
     target="_blank"
-    class="fixed bottom-6 right-6 flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-400 text-white px-5 py-3 rounded-full shadow-2xl hover:from-green-600 hover:to-green-500 transition-all duration-300 ring-2 ring-green-300 ring-offset-2 md:hidden"
+    class="fixed bottom-20 right-6 flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-400 text-white px-5 py-3 rounded-full shadow-2xl hover:from-green-600 hover:to-green-500 transition-all duration-300 ring-2 ring-green-300 ring-offset-2 md:hidden"
     title="Hubungi Kami via WhatsApp"
   >
     <i class="fa fa-whatsapp fa-3x" aria-hidden="true"></i>
@@ -791,8 +823,11 @@
 </main>
 
 <!-- Tombol "Pesan Kamar" yang tetap di bagian bawah layar untuk mobile -->
+<!-- Tambahkan transisi visibilitas -->
 <button
-  class="fixed bottom-0 left-0 w-full bg-indigo-600 text-white px-5 py-4 font-semibold hover:bg-indigo-700 transition-colors duration-300 shadow-lg z-40 md:hidden"
+  class="fixed bottom-0 left-0 w-full bg-indigo-600 text-white px-5 py-4 font-semibold hover:bg-indigo-700 transition-opacity duration-300 shadow-lg z-40 md:hidden {showFloatingButton
+    ? 'opacity-100'
+    : 'opacity-0 pointer-events-none'}"
   on:click={order}
 >
   Pesan Kamar
