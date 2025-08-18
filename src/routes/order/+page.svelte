@@ -1,72 +1,80 @@
-<script>
-  import { onMount } from 'svelte';
-  import { getAuth, signInAnonymously } from 'firebase/auth';
-  import { initializeApp } from 'firebase/app';
+<script lang="ts">
+  import { onMount } from "svelte";
+  import { signInAnonymously } from "firebase/auth";
+  import { auth } from "$lib/firebase"; // Mengimpor 'auth' dari file firebase.ts
+  import { browser } from "$app/environment"; // Mengimpor 'browser' dari SvelteKit
+  import { goto } from "$app/navigation";
 
-  // The following global variables are provided by the canvas environment.
-  // DO NOT CHANGE their names or values.
-  // We use different variable names here to avoid a self-reference error
-  // that can occur with `const` declarations in certain environments.
-  const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-  const firebaseConfigString = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
-  const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+  // Variabel global yang disediakan oleh lingkungan kanvas.
+  // JANGAN mengubah nama atau nilainya.
+  const appId = typeof __app_id !== "undefined" ? __app_id : "default-app-id";
+  const initialAuthToken =
+    typeof __initial_auth_token !== "undefined" ? __initial_auth_token : null;
 
-  // Pastikan variabel firebaseConfig tidak diinisialisasi ulang
-  let firebaseApp = null;
-  let auth = null;
-  let isFirebaseInitialized = false;
+  // Deklarasi variabel dengan tipe eksplisit
+  let fullName: string = "tes";
+  let email: string = "tes@domain.com";
+  let checkin: string = "2023-10-20";
+  let checkout: string = "2023-10-25";
+  let roomType: string = "superior";
+  let terms: boolean = true;
 
-  // Inisialisasi Firebase hanya jika konfigurasi valid
-  if (firebaseConfigString !== '{}' && firebaseConfigString !== '') {
-    try {
-      const firebaseConfig = JSON.parse(firebaseConfigString);
-      firebaseApp = initializeApp(firebaseConfig);
-      auth = getAuth(firebaseApp);
-      isFirebaseInitialized = true;
-    } catch (e) {
-      console.error("Gagal menginisialisasi Firebase. Konfigurasi tidak valid.", e);
-    }
-  } else {
-    console.warn("Konfigurasi Firebase tidak ditemukan. Beberapa fitur mungkin tidak berfungsi.");
-  }
+  let loading: boolean = false;
+  let paymentStatus: string | null = null;
+  let authReady: boolean = false;
 
-  let fullName = '';
-  let email = '';
-  let checkin = '';
-  let checkout = '';
-  let roomType = '';
-  let terms = false;
-
-  let loading = false;
-  let paymentStatus = null;
-  let authReady = false;
-
-  // Simple validation state
-  let errors = {
-    fullName: '',
-    email: '',
-    checkin: '',
-    checkout: '',
-    roomType: '',
-    terms: '',
+  // Status validasi sederhana dengan tipe
+  type FormErrors = {
+    fullName: string;
+    email: string;
+    checkin: string;
+    checkout: string;
+    roomType: string;
+    terms: string;
+  };
+  let errors: FormErrors = {
+    fullName: "",
+    email: "",
+    checkin: "",
+    checkout: "",
+    roomType: "",
+    terms: "",
   };
 
-  function validateForm() {
+  function validateForm(): boolean {
     errors = {
-      fullName: '',
-      email: '',
-      checkin: '',
-      checkout: '',
-      roomType: '',
-      terms: '',
+      fullName: "",
+      email: "",
+      checkin: "",
+      checkout: "",
+      roomType: "",
+      terms: "",
     };
-    let isValid = true;
-    if (!fullName) { errors.fullName = 'Nama lengkap wajib diisi.'; isValid = false; }
-    if (!email) { errors.email = 'Email wajib diisi.'; isValid = false; }
-    if (!checkin) { errors.checkin = 'Tanggal check-in wajib diisi.'; isValid = false; }
-    if (!checkout) { errors.checkout = 'Tanggal check-out wajib diisi.'; isValid = false; }
-    if (!roomType) { errors.roomType = 'Pilihan kamar wajib diisi.'; isValid = false; }
-    if (!terms) { errors.terms = 'Anda harus menyetujui syarat dan ketentuan.'; isValid = false; }
+    let isValid: boolean = true;
+    if (!fullName) {
+      errors.fullName = "Nama lengkap wajib diisi.";
+      isValid = false;
+    }
+    if (!email) {
+      errors.email = "Email wajib diisi.";
+      isValid = false;
+    }
+    if (!checkin) {
+      errors.checkin = "Tanggal check-in wajib diisi.";
+      isValid = false;
+    }
+    if (!checkout) {
+      errors.checkout = "Tanggal check-out wajib diisi.";
+      isValid = false;
+    }
+    if (!roomType) {
+      errors.roomType = "Pilihan kamar wajib diisi.";
+      isValid = false;
+    }
+    if (!terms) {
+      errors.terms = "Anda harus menyetujui syarat dan ketentuan.";
+      isValid = false;
+    }
     return isValid;
   }
 
@@ -83,18 +91,18 @@
     loading = true;
 
     // Hitung total harga
-    const roomRates = {
+    const roomRates: { [key: string]: number } = {
       superior: 500000,
       deluxe: 800000,
-      suite: 1500000
+      suite: 1500000,
     };
-    const roomPrice = roomRates[roomType];
-    const checkinDate = new Date(checkin);
-    const checkoutDate = new Date(checkout);
-    const timeDiff = checkoutDate.getTime() - checkinDate.getTime();
-    const stayDuration = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    const roomPrice: number = roomRates[roomType];
+    const checkinDate: Date = new Date(checkin);
+    const checkoutDate: Date = new Date(checkout);
+    const timeDiff: number = checkoutDate.getTime() - checkinDate.getTime();
+    const stayDuration: number = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-    const grossAmount = roomPrice * stayDuration;
+    const grossAmount: number = roomPrice * stayDuration;
 
     // Data transaksi untuk Midtrans
     const transactionDetails = {
@@ -113,41 +121,48 @@
         customer_details: customerDetails,
       };
 
-      const apiKey = "";
-      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+      // const apiKey = "";
+      // const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
-      const apiResponse = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: `Generate a Midtrans Snap Token for the following booking: ${JSON.stringify(payload)}` }]
-          }]
-        }),
-      });
+      // const apiResponse = await fetch(apiUrl, {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({
+      //     contents: [
+      //       {
+      //         parts: [
+      //           {
+      //             text: `Generate a Midtrans Snap Token for the following booking: ${JSON.stringify(payload)}`,
+      //           },
+      //         ],
+      //       },
+      //     ],
+      //   }),
+      // });
 
-      const result = await apiResponse.json();
-      const snapToken = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+      // const result = await apiResponse.json();
+      const snapToken = "tess";
 
-      if (snapToken) {
+      if (snapToken && browser) {
+        // Memastikan kode hanya berjalan di browser
         loading = false;
         // Tampilkan pop-up Midtrans
-        window.snap.pay(snapToken, {
-          onSuccess: (result) => {
+        (window as any).snap.pay(snapToken, {
+          onSuccess: (result: any) => {
             paymentStatus = "Pembayaran berhasil!";
             console.log(result);
           },
-          onPending: (result) => {
+          onPending: (result: any) => {
             paymentStatus = "Pembayaran sedang diproses.";
             console.log(result);
           },
-          onError: (result) => {
+          onError: (result: any) => {
             paymentStatus = "Pembayaran gagal!";
             console.log(result);
           },
           onClose: () => {
-            console.log('Pop-up Midtrans ditutup tanpa pembayaran.');
-          }
+            console.log("Pop-up Midtrans ditutup tanpa pembayaran.");
+          },
         });
       }
     } catch (error) {
@@ -157,54 +172,72 @@
     }
   }
 
-  // Load Midtrans Snap.js script and handle Firebase auth on component mount
+  // Muat skrip Midtrans Snap.js dan tangani otentikasi Firebase saat komponen dipasang
   onMount(async () => {
-    // Firebase Anonymous Sign-in
-    if (isFirebaseInitialized) {
-        try {
-          if (initialAuthToken) {
-            await signInAnonymously(auth);
-          }
-        } catch (error) {
-          console.error("Error during anonymous sign-in:", error);
-        } finally {
-          authReady = true;
-        }
-    } else {
-        authReady = true; // Lanjutkan tanpa auth jika Firebase tidak terinisialisasi
+    // Masuk Anonim Firebase
+    try {
+      if (initialAuthToken) {
+        await signInAnonymously(auth);
+      }
+    } catch (error) {
+      console.error("Kesalahan selama masuk anonim:", error);
+    } finally {
+      authReady = true;
     }
 
-    // Load Midtrans Snap.js
-    const midtransScriptUrl = 'https://app.sandbox.midtrans.com/snap/snap.js';
-    let script = document.createElement('script');
-    script.src = midtransScriptUrl;
-    // GANTI 'YOUR_CLIENT_KEY' dengan kunci client Midtrans Anda yang sebenarnya
-    script.setAttribute('data-client-key', 'YOUR_CLIENT_KEY');
-    document.body.appendChild(script);
+    // Muat skrip Midtrans Snap.js hanya di sisi klien
+    if (browser) {
+      const midtransScriptUrl: string =
+        "https://app.sandbox.midtrans.com/snap/snap.js";
+      let script: HTMLScriptElement = document.createElement("script");
+      script.src = midtransScriptUrl;
+      // GANTI 'YOUR_CLIENT_KEY' dengan kunci klien Midtrans Anda yang sebenarnya
+      script.setAttribute("data-client-key", "YOUR_CLIENT_KEY");
+      document.body.appendChild(script);
 
-    return () => {
-      document.body.removeChild(script);
-    };
+      return () => {
+        document.body.removeChild(script);
+      };
+
+      var payButton = document.getElementById("pay-button");
+      payButton.addEventListener("click", function () {
+        snap.pay("<SNAP_TOKEN>");
+      });
+    }
   });
 </script>
 
-<div class="min-h-screen bg-gray-900 text-white font-sans flex items-center justify-center p-4 relative overflow-hidden">
-  <div class="absolute inset-0 z-0 bg-gray-950 opacity-90 backdrop-filter backdrop-blur-lg"></div>
+<!-- Menggunakan Google Font "Open Sans" untuk tampilan yang lebih klasik -->
+<link
+  href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap"
+  rel="stylesheet"
+/>
 
-  <div class="relative z-10 w-full max-w-2xl bg-gray-800 bg-opacity-70 backdrop-filter backdrop-blur-lg rounded-3xl shadow-2xl p-8 md:p-12 border border-gray-700 transform transition-all duration-500 ease-in-out hover:scale-105">
+<div
+  class="min-h-screen wordpress-bg text-gray-800 font-open-sans flex items-center justify-center p-4"
+  style="font-family: 'Futura PT', sans-serif;"
+>
+  <div
+    class="w-full max-w-2xl bg-white rounded-lg shadow-md p-8 md:p-12 border border-gray-200"
+  >
+    <!-- Header dengan tipografi yang sederhana dan jelas -->
     <div class="text-center mb-8">
-      <h1 class="text-4xl md:text-5xl font-extrabold text-blue-400 mb-2 drop-shadow-md">
-        Pesan Kamar Hotel 🛎️
-      </h1>
-      <p class="text-gray-300">
-        Nikmati pengalaman menginap terbaik dengan reservasi mudah.
+      <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">DEMOTEL</h1>
+      <p class="text-gray-500 font-medium">
+        Nikmati pengalaman menginap terbaik dengan pemesanan mudah.
       </p>
     </div>
+
+    <!-- Divider dekoratif yang lebih sederhana -->
+    <div class="h-0.5 bg-gray-200 w-full mx-auto mb-8"></div>
 
     <form on:submit|preventDefault={onSubmit} class="space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label for="fullName" class="block text-sm font-medium text-gray-200 mb-1">
+          <label
+            for="fullName"
+            class="block text-sm font-semibold text-gray-700 mb-1"
+          >
             Nama Lengkap
           </label>
           <input
@@ -212,15 +245,21 @@
             type="text"
             bind:value={fullName}
             on:blur={() => validateForm()}
-            class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+            class="w-full px-4 py-2 bg-white text-gray-800 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder:text-gray-400"
+            placeholder="Masukkan nama lengkap Anda"
           />
           {#if errors.fullName}
-            <p class="mt-1 text-sm text-red-400">{errors.fullName}</p>
+            <p class="mt-1 text-sm text-red-500 font-medium">
+              {errors.fullName}
+            </p>
           {/if}
         </div>
 
         <div>
-          <label for="email" class="block text-sm font-medium text-gray-200 mb-1">
+          <label
+            for="email"
+            class="block text-sm font-semibold text-gray-700 mb-1"
+          >
             Email
           </label>
           <input
@@ -228,17 +267,21 @@
             type="email"
             bind:value={email}
             on:blur={() => validateForm()}
-            class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+            class="w-full px-4 py-2 bg-white text-gray-800 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 placeholder:text-gray-400"
+            placeholder="contoh@email.com"
           />
           {#if errors.email}
-            <p class="mt-1 text-sm text-red-400">{errors.email}</p>
+            <p class="mt-1 text-sm text-red-500 font-medium">{errors.email}</p>
           {/if}
         </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label for="checkin" class="block text-sm font-medium text-gray-200 mb-1">
+          <label
+            for="checkin"
+            class="block text-sm font-semibold text-gray-700 mb-1"
+          >
             Tanggal Check-in
           </label>
           <input
@@ -246,15 +289,20 @@
             type="date"
             bind:value={checkin}
             on:blur={() => validateForm()}
-            class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+            class="w-full px-4 py-2 bg-white text-gray-800 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
           />
           {#if errors.checkin}
-            <p class="mt-1 text-sm text-red-400">{errors.checkin}</p>
+            <p class="mt-1 text-sm text-red-500 font-medium">
+              {errors.checkin}
+            </p>
           {/if}
         </div>
 
         <div>
-          <label for="checkout" class="block text-sm font-medium text-gray-200 mb-1">
+          <label
+            for="checkout"
+            class="block text-sm font-semibold text-gray-700 mb-1"
+          >
             Tanggal Check-out
           </label>
           <input
@@ -262,23 +310,28 @@
             type="date"
             bind:value={checkout}
             on:blur={() => validateForm()}
-            class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+            class="w-full px-4 py-2 bg-white text-gray-800 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
           />
           {#if errors.checkout}
-            <p class="mt-1 text-sm text-red-400">{errors.checkout}</p>
+            <p class="mt-1 text-sm text-red-500 font-medium">
+              {errors.checkout}
+            </p>
           {/if}
         </div>
       </div>
 
       <div>
-        <label for="roomType" class="block text-sm font-medium text-gray-200 mb-1">
+        <label
+          for="roomType"
+          class="block text-sm font-semibold text-gray-700 mb-1"
+        >
           Pilih Tipe Kamar
         </label>
         <select
           id="roomType"
           bind:value={roomType}
           on:blur={() => validateForm()}
-          class="w-full px-4 py-2 bg-gray-700 text-white rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
+          class="w-full px-4 py-2 bg-white text-gray-800 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
         >
           <option value="">Pilih...</option>
           <option value="superior">Superior Room (Rp 500.000 / malam)</option>
@@ -286,7 +339,9 @@
           <option value="suite">Suite Room (Rp 1.500.000 / malam)</option>
         </select>
         {#if errors.roomType}
-          <p class="mt-1 text-sm text-red-400">{errors.roomType}</p>
+          <p class="mt-1 text-sm text-red-500 font-medium">
+            {errors.roomType}
+          </p>
         {/if}
       </div>
 
@@ -296,26 +351,43 @@
           type="checkbox"
           bind:checked={terms}
           on:change={() => validateForm()}
-          class="w-4 h-4 text-blue-500 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+          class="w-4 h-4 text-blue-500 bg-white border-gray-300 rounded focus:ring-1 focus:ring-blue-500 transition-all duration-300"
         />
-        <label for="terms" class="text-sm font-medium text-gray-200">
+        <label for="terms" class="text-sm font-medium text-gray-700">
           Saya menyetujui syarat dan ketentuan
         </label>
       </div>
       {#if errors.terms}
-        <p class="mt-1 text-sm text-red-400">{errors.terms}</p>
+        <p class="mt-1 text-sm text-red-500 font-medium">{errors.terms}</p>
       {/if}
 
       <button
+        id="pay-button"
         type="submit"
         disabled={loading}
-        class="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold py-3 px-4 rounded-lg shadow-xl hover:shadow-2xl hover:from-blue-600 hover:to-indigo-700 transition duration-300 ease-in-out transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+        class="w-full bg-blue-500 text-white font-bold py-3 px-4 rounded-md shadow-sm hover:shadow-md hover:bg-blue-600 transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {#if loading}
           <span class="flex items-center justify-center">
-            <svg class="animate-spin h-5 w-5 mr-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <svg
+              class="animate-spin h-5 w-5 mr-3 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
             </svg>
             Memproses...
           </span>
@@ -323,16 +395,49 @@
           Pesan Sekarang
         {/if}
       </button>
+      <!-- kembali -->
+      <button
+        type="button"
+        on:click={() => {
+          // Kembali ke halaman sebelumnya
+          goto("/");
+        }}
+        class="w-full bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-md shadow-sm hover:shadow-md hover:bg-gray-300 transition-all duration-300 ease-in-out"
+      >
+        Kembali
+      </button>
+
+      <button
+        type="button"
+        on:click={() => {
+          // Kembali ke halaman sebelumnya
+          goto("/finish");
+        }}
+        class="w-full text-gray-800 font-bold py-2 px-4transition-all duration-300 ease-in-out underline"
+      >
+        Display Finish
+      </button>
     </form>
 
     {#if paymentStatus}
-      <div class="mt-6 p-4 rounded-lg text-center font-semibold text-lg" style="background-color: #2d3748; border-color: #4a5568;">
-        <p class="{paymentStatus.includes('berhasil') ? 'text-green-400' : 'text-red-400'}">
+      <div
+        class="mt-6 p-4 rounded-md text-center font-semibold text-lg bg-gray-100 border border-gray-200"
+      >
+        <p
+          class={paymentStatus.includes("berhasil")
+            ? "text-green-600"
+            : "text-red-600"}
+        >
           {paymentStatus}
         </p>
       </div>
     {/if}
   </div>
-
-  <div id="payment-modal-container" class="fixed inset-0 z-50"></div>
 </div>
+
+<style>
+  /* Menggunakan warna solid dan bersih untuk latar belakang */
+  .wordpress-bg {
+    background-color: #f8f9fa;
+  }
+</style>
