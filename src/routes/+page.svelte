@@ -329,7 +329,7 @@
           on:click={order}
           class="md:block hidden bg-indigo-600 text-white px-6 py-3 rounded-l-xl shadow-lg hover:bg-indigo-700 transition-colors duration-300 z-50 {showFloatingButton
             ? 'opacity-100 cursor-pointer'
-            : 'opacity-0 pointer-events-none cursor-pointer'}"
+            : 'opacity-0 cursor-pointer'}"
         >
           Pesan Sekarang
         </button>
@@ -337,7 +337,7 @@
           on:click={login}
           class="md:block hidden bg-indigo-600 text-white px-6 py-3 shadow-lg hover:bg-indigo-700 transition-colors duration-300 z-50 {showFloatingButton
             ? 'rounded-r-xl cursor-pointer'
-            : 'opacity-100 pointer-events-none rounded-xl cursor-pointer'}"
+            : 'opacity-100 rounded-xl cursor-pointer'}"
         >
           Login
         </button>
