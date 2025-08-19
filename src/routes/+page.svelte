@@ -47,7 +47,7 @@
 
   let selectedRoom: Room | null = null;
 
-  let showCards = true;
+  let showCards = false;
 
   // Otomatis set checkin hari ini dan checkout besok
   let checkinDate: string = new Date().toISOString().slice(0, 10);
