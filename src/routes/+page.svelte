@@ -2,13 +2,23 @@
   import { goto } from "$app/navigation";
   import { onMount, onDestroy } from "svelte";
   // Impor transisi fade dari Svelte
-  import { fade } from "svelte/transition";
+  import { fade, fly } from "svelte/transition";
   import hotelLogo from "$lib/images/logohotel.png";
-  import { collection, getDocs } from "firebase/firestore";
+  import {
+    addDoc,
+    collection,
+    getDocs,
+    or,
+    query,
+    where,
+  } from "firebase/firestore";
   import { db } from "$lib/firebase";
   import type { Amnities, CarouselImage } from "../types";
   import "leaflet/dist/leaflet.css"; // <-- Impor CSS Leaflet
   import type { Testimoni } from "../types/testimoni";
+  import DetailRoom from "$lib/components/DetailRoom.svelte";
+  import type { Room } from "../types/room";
+  import RoomAvailable from "$lib/components/RoomAvailable.svelte";
 
   let mapElement: HTMLElement;
   let mapData: L.Map | null = null;
@@ -28,6 +38,32 @@
   let amenities: Amnities[] = [];
 
   let testimonials: Testimoni[] = [];
+
+  let isModalOpen = false;
+
+  let roomList: Room[] = [];
+
+  let roomMeeting: Room[] = [];
+
+  let selectedRoom: Room | null = null;
+
+  let showCards = true;
+
+  // Otomatis set checkin hari ini dan checkout besok
+  let checkinDate: string = new Date().toISOString().slice(0, 10);
+  let checkoutDate: string = (() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().slice(0, 10);
+  })();
+
+  let jumlahTamu: number = 1;
+
+  // Fungsi untuk membuka modal
+  function openDetail(room: Room) {
+    selectedRoom = room;
+    isModalOpen = true;
+  }
 
   async function fetchCarouselImages() {
     try {
@@ -88,80 +124,41 @@
     }
   }
 
+  //where kategori kamar
+  async function fetchRooms() {
+    try {
+      const roomsQuery = query(
+        collection(db, "rooms"),
+        where("kategori", "==", "kamar"),
+      );
+      const snap = await getDocs(roomsQuery);
+      roomList = snap.docs.map((doc) => doc.data() as Room);
+      console.log("Data kamar berhasil diambil:", roomList);
+    } catch (error) {
+      console.error("Gagal mengambil data kamar:", error);
+    }
+  }
+
+  //where kategori ruangan
+  async function fetchMeetRoom() {
+    try {
+      const publicAreasQuery = query(
+        collection(db, "rooms"),
+        where("kategori", "==", "ruangan"),
+      );
+      const snap = await getDocs(publicAreasQuery);
+      roomMeeting = snap.docs.map((doc) => doc.data() as Room);
+      console.log("Data ruang pertemuan berhasil diambil:", roomMeeting);
+    } catch (error) {
+      console.error("Gagal mengambil data ruang pertemuan:", error);
+    }
+  }
+
   const hotelName = "SUNGAI MUSI HOTEL";
   const tagline = "Tempat peristirahatan Anda jauh dari hiruk pikuk kota.";
   const aboutText = `
     Selamat datang di Sungai Musi Hotel, di mana ketenangan bertemu dengan kemewahan. Terletak di jantung alam yang indah, hotel kami menawarkan pelarian yang sempurna dengan pemandangan menakjubkan, akomodasi yang nyaman, dan layanan yang tak tertandingi.
   `;
-
-  const roomList = [
-    {
-      name: "Kamar Standar",
-      description: "Kamar yang nyaman dengan pemandangan kota.",
-      price: "Rp 1.500.000 / malam",
-      imageUrl:
-        "https://plus.unsplash.com/premium_photo-1674676471081-0236e34485fd?q=80&w=774&auto=format&fit=crop",
-      details:
-        "Kamar berukuran 25m² dengan satu ranjang berukuran queen atau dua ranjang single, dilengkapi dengan kamar mandi pribadi dan pemandangan kota.",
-    },
-    {
-      name: "Kamar Deluxe",
-      description: "Kamar luas dengan pemandangan taman.",
-      price: "Rp 2.500.000 / malam",
-      imageUrl:
-        "https://images.unsplash.com/photo-1598928636135-d146006ff4be?q=80&w=1170&auto=format&fit=crop",
-      details:
-        "Kamar berukuran 35m² dengan satu ranjang berukuran king, kamar mandi mewah, dan pemandangan taman yang menenangkan.",
-    },
-    {
-      name: "Suite Executive",
-      description: "Ruangan mewah dengan balkon pribadi.",
-      price: "Rp 5.000.000 / malam",
-      imageUrl:
-        "https://plus.unsplash.com/premium_photo-1664300396006-1fbd23c87142?q=80&w=1074&auto=format&fit=crop",
-      details:
-        "Suite berukuran 60m² yang dilengkapi dengan area ruang tamu terpisah, balkon pribadi, dan pemandangan kolam renang infinity.",
-    },
-    {
-      name: "Family Suite",
-      description: "Suite yang luas, ideal untuk keluarga.",
-      price: "Rp 4.000.000 / malam",
-      imageUrl:
-        "https://plus.unsplash.com/premium_photo-1661963428055-4b25a7ebd3a9?q=80&w=1116&auto=format&fit=crop",
-      details:
-        "Suite berukuran 70m² dengan dua kamar tidur, kamar mandi ganda, dan area bermain anak-anak. Sempurna untuk liburan keluarga.",
-    },
-    {
-      name: "Honeymoon Suite",
-      description: "Ruangan romantis dengan fasilitas premium.",
-      price: "Rp 6.000.000 / malam",
-      imageUrl:
-        "https://plus.unsplash.com/premium_photo-1661963657190-ecdd1ca794f9?q=80&w=1129&auto=format&fit=crop",
-      details:
-        "Ruangan berukuran 55m² yang romantis dengan Jacuzzi pribadi, layanan kamar 24 jam, dan pemandangan laut yang spektakuler.",
-    },
-  ];
-
-  const meetingRooms = [
-    {
-      name: "Meeting Room A",
-      description: "Kapasitas hingga 20 orang. Proyektor tersedia.",
-      price: "Rp 1.000.000 / jam",
-      imageUrl:
-        "https://plus.unsplash.com/premium_photo-1661879435429-a396d927c686?q=80&w=1112&auto=format&fit=crop",
-      details:
-        "Ruang rapat berukuran sedang dengan proyektor HD, layar proyektor, dan koneksi internet super cepat. Ideal untuk rapat tim atau presentasi kecil.",
-    },
-    {
-      name: "Grand Ballroom",
-      description: "Kapasitas hingga 200 orang. Cocok untuk acara besar.",
-      price: "Rp 10.000.000 / acara",
-      imageUrl:
-        "https://plus.unsplash.com/premium_photo-1661900268317-2ab4dccd2fcb?q=80&w=1074&auto=format&fit=crop",
-      details:
-        "Ballroom luas yang dapat menampung hingga 200 tamu. Dilengkapi dengan sistem audio-visual canggih, panggung, dan katering lengkap untuk acara besar.",
-    },
-  ];
 
   let showMessage = false;
   let messageContent = "";
@@ -238,6 +235,8 @@
     fetchDestinationImages();
     fetchAmenities();
     fetchTestimonials();
+    fetchRooms();
+    fetchMeetRoom();
 
     // Dynamic import Leaflet (hanya di browser)
     const L = await import("leaflet");
@@ -273,6 +272,10 @@
 
   function login() {
     goto("/login");
+  }
+
+  async function handleSearch() {
+    showCards = true;
   }
 </script>
 
@@ -483,48 +486,50 @@
         <div class="flex-1">
           <label
             for="checkin"
-            class="block text-gray-700 text-xs sm:text-sm font-medium mb-1"
+            class="block text-gray-700 text-xs sm:text-sm font-semibold mb-1"
             >Tanggal Check-in</label
           >
           <input
             type="date"
             id="checkin"
-            class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200 text-sm"
+            class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200 text-md text-black"
+            bind:value={checkinDate}
           />
         </div>
 
         <div class="flex-1">
           <label
             for="checkout"
-            class="block text-gray-700 text-xs sm:text-sm font-medium mb-1"
+            class="block text-gray-700 text-xs sm:text-sm font-semibold mb-1"
             >Tanggal Check-out</label
           >
           <input
             type="date"
             id="checkout"
-            class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200 text-sm"
+            class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200 text-md text-black"
+            bind:value={checkoutDate}
           />
         </div>
 
         <div class="flex-1">
           <label
             for="guests"
-            class="block text-gray-700 text-xs sm:text-sm font-medium mb-1"
+            class="block text-gray-700 text-xs sm:text-sm font-semibold mb-1"
             >Jumlah Tamu</label
           >
           <input
             type="number"
             id="guests"
             min="1"
-            value="1"
-            class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200 text-sm"
+            bind:value={jumlahTamu}
+            class="w-full px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-indigo-200 text-md text-black text-center font-bold"
           />
         </div>
 
         <div class="flex-shrink-0 flex items-end">
           <button
-            type="submit"
-            class="w-full md:w-auto bg-indigo-600 text-white px-3 py-1 sm:px-6 sm:py-2 rounded-md text-sm sm:text-base font-semibold hover:bg-indigo-700 transition-colors duration-300"
+            class="w-full md:w-auto bg-indigo-600 text-white px-3 py-1 sm:px-6 sm:py-2 rounded-md text-sm sm:text-base font-semibold hover:bg-indigo-700 transition-colors duration-300 cursor-pointer"
+            on:click={handleSearch}
           >
             Cari Kamar
           </button>
@@ -620,25 +625,25 @@
             class="p-6 shadow-sm transition-transform duration-300 hover:scale-105"
           >
             <img
-              src={room.imageUrl}
+              src={room.image}
               alt={room.name}
               class="w-full h-60 object-cover mb-4"
             />
             <h3 class="text-2xl font-bold text-gray-800 mb-2">{room.name}</h3>
             <p class="text-gray-600 mb-4">{room.description}</p>
             <p class="text-xl font-semibold text-indigo-600 mb-4">
-              {room.price}
+              Rp {room.price.toLocaleString("id-ID")}
             </p>
             <div class="flex space-x-4">
               <button
                 class="flex-1 bg-indigo-600 text-white py-2 rounded-full font-semibold hover:bg-indigo-700 transition duration-300"
-                on:click={() => openBooking(room)}
+                on:click={order}
               >
                 Pesan
               </button>
               <button
-                class="flex-1 bg-gray-300 text-gray-800 py-2 rounded-full font-semibold hover:bg-gray-400 transition duration-300"
-                on:click={() => openBooking(room)}
+                class="flex-1 bg-gray-300 text-gray-800 py-2 rounded-full font-semibold hover:bg-gray-400 transition duration-300 cursor-pointer"
+                on:click={() => openDetail(room)}
               >
                 Detail
               </button>
@@ -663,30 +668,30 @@
         Ruangan meeting kami dirancang untuk kenyamanan dan produktivitas Anda.
       </p>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {#each meetingRooms as room}
+        {#each roomMeeting as room}
           <div
             class="bg-white p-6 shadow-sm transition-transform duration-300 hover:scale-105"
           >
             <img
-              src={room.imageUrl}
+              src={room.image}
               alt={room.name}
               class="w-full h-48 object-cover mb-4"
             />
             <h3 class="text-2xl font-bold text-gray-800 mb-2">{room.name}</h3>
             <p class="text-gray-600 mb-4">{room.description}</p>
             <p class="text-xl font-semibold text-indigo-600 mb-4">
-              {room.price}
+              Rp {room.price.toLocaleString("id-ID")}
             </p>
             <div class="flex space-x-4">
               <button
                 class="flex-1 bg-indigo-600 text-white py-2 rounded-full font-semibold hover:bg-indigo-700 transition duration-300"
-                on:click={() => openBooking(room)}
+                on:click={order}
               >
                 Pesan
               </button>
               <button
-                class="flex-1 bg-gray-300 text-gray-800 py-2 rounded-full font-semibold hover:bg-gray-400 transition duration-300"
-                on:click={() => openBooking(room)}
+                class="flex-1 bg-gray-300 text-gray-800 py-2 rounded-full font-semibold hover:bg-gray-400 transition duration-300 cursor-pointer"
+                on:click={() => openDetail(room)}
               >
                 Detail
               </button>
@@ -973,6 +978,12 @@
   </div>
 {/if}
 
+<DetailRoom
+  bind:isOpen={isModalOpen}
+  room={selectedRoom}
+  on:close={() => console.log("Modal ditutup!")}
+/>
+
 <!-- Gunakan if-block untuk transisi fade pada modal detail -->
 {#if showModal}
   <div
@@ -990,6 +1001,25 @@
       class="bg-indigo-600 text-white py-2 px-6 rounded-full hover:bg-indigo-700 transition-colors"
       on:click={() => (showModal = false)}>Tutup</button
     >
+  </div>
+{/if}
+
+{#if showCards}
+  <div
+    class="fixed inset-0 bg-transparent bg-opacity-75 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm transition-opacity duration-300"
+    style="font-family: 'Futura PT', sans-serif;"
+    transition:fly={{ y: 100, duration: 500 }}
+  >
+    <div
+      class="bg-white p-4 sm:p-8 rounded-xl shadow-2xl z-50 text-center w-full max-w-xs sm:max-w-2xl md:max-w-3xl lg:max-w-5xl mx-auto flex flex-col items-center justify-center overflow-auto"
+      style="top: 50%; left: 50%; transform: translate(-50%, -50%); position: fixed; max-height: 90vh;"
+    >
+      <RoomAvailable />
+      <button
+        class="bg-red-600 text-white py-2 px-4 sm:px-6 rounded-full hover:bg-red-700 transition-colors font-semibold text-base sm:text-xl cursor-pointer mt-4 sm:mt-6"
+        on:click={() => (showCards = false)}>Tutup</button
+      >
+    </div>
   </div>
 {/if}
 

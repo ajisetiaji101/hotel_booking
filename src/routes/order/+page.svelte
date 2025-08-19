@@ -1,10 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { signInAnonymously } from "firebase/auth";
-  import { auth } from "$lib/firebase"; // Mengimpor 'auth' dari file firebase.ts
+  import { auth, db } from "$lib/firebase"; // Mengimpor 'auth' dari file firebase.ts
   import { browser } from "$app/environment"; // Mengimpor 'browser' dari SvelteKit
   import { goto } from "$app/navigation";
   import hotelLogo from "$lib/images/logohotel.png";
+  import { collection, getDocs } from "firebase/firestore";
+  import type { Room } from "../../types/room";
 
   // Variabel global yang disediakan oleh lingkungan kanvas.
   // JANGAN mengubah nama atau nilainya.
@@ -16,6 +18,8 @@
   let checkout: string = "2023-10-25";
   let roomType: string = "superior";
   let terms: boolean = true;
+
+  let listRooms: Room[] = [];
 
   let loading: boolean = false;
   let paymentStatus: string | null = null;
@@ -144,8 +148,20 @@
     }
   }
 
+  async function fetchRoom() {
+    try {
+      const snap = await getDocs(collection(db, "rooms"));
+      listRooms = snap.docs.map((doc) => doc.data() as Room);
+
+      console.log("Fetched rooms:", listRooms);
+    } catch (error) {
+      console.error("Error fetching room:", error);
+    }
+  }
+
   // Muat skrip Midtrans Snap.js dan tangani otentikasi Firebase saat komponen dipasang
   onMount(() => {
+    fetchRoom();
     // Muat skrip Midtrans Snap.js hanya di sisi klien
     let script: HTMLScriptElement | null = null;
     if (browser) {
@@ -299,10 +315,12 @@
           on:blur={() => validateForm()}
           class="w-full px-4 py-2 bg-white text-gray-800 rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300"
         >
-          <option value="">Pilih...</option>
-          <option value="superior">Superior Room (Rp 500.000 / malam)</option>
-          <option value="deluxe">Deluxe Room (Rp 800.000 / malam)</option>
-          <option value="suite">Suite Room (Rp 1.500.000 / malam)</option>
+          <option value="" disabled selected>Pilih Tipe Kamar...</option>
+          {#each listRooms as room (room.id)}
+            <option value={room.id}
+              >{room.name} - Rp{room.price.toLocaleString("id-ID")}</option
+            >
+          {/each}
         </select>
         {#if errors.roomType}
           <p class="mt-1 text-sm text-red-500 font-medium">

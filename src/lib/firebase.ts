@@ -2,7 +2,7 @@
 
 import { initializeApp, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
-import { getFirestore, type Firestore } from "firebase/firestore";
+import { addDoc, collection, getFirestore, type Firestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 import { browser } from "$app/environment"; // Import 'browser' dari SvelteKit
 
