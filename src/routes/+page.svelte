@@ -8,6 +8,7 @@
   import { db } from "$lib/firebase";
   import type { Amnities, CarouselImage } from "../types";
   import "leaflet/dist/leaflet.css"; // <-- Impor CSS Leaflet
+  import type { Testimoni } from "../types/testimoni";
 
   let mapElement: HTMLElement;
   let mapData: L.Map | null = null;
@@ -25,6 +26,8 @@
   let numberWhatsapp: string;
 
   let amenities: Amnities[] = [];
+
+  let testimonials: Testimoni[] = [];
 
   async function fetchCarouselImages() {
     try {
@@ -72,6 +75,16 @@
       console.log(amenities);
     } catch (error) {
       console.error("Error fetching amenities:", error);
+    }
+  }
+
+  // Ambil data testimoni dari Firebase
+  async function fetchTestimonials() {
+    try {
+      const snap = await getDocs(collection(db, "testimoni"));
+      testimonials = snap.docs.map((doc) => doc.data() as Testimoni);
+    } catch (error) {
+      console.error("Error fetching testimonials:", error);
     }
   }
 
@@ -150,27 +163,6 @@
     },
   ];
 
-  const testimonials = [
-    {
-      name: "Andi Pratama",
-      review:
-        "Pengalaman menginap yang luar biasa! Pemandangan dari kamar sangat menakjubkan, dan pelayanannya sangat ramah.",
-      avatar: "https://randomuser.me/api/portraits/men/3.jpg",
-    },
-    {
-      name: "Budi Santoso",
-      review:
-        "Tempat yang sempurna untuk beristirahat. Kolam renang infinity-nya benar-benar tak terlupakan. Sangat direkomendasikan!",
-      avatar: "https://randomuser.me/api/portraits/men/23.jpg",
-    },
-    {
-      name: "Citra Dewi",
-      review:
-        "Restoran fine dining menyajikan hidangan yang lezat dengan suasana yang romantis. Pasti akan kembali lagi.",
-      avatar: "https://randomuser.me/api/portraits/women/2.jpg",
-    },
-  ];
-
   let showMessage = false;
   let messageContent = "";
   let showModal = false;
@@ -245,6 +237,7 @@
     fetchContactInfo();
     fetchDestinationImages();
     fetchAmenities();
+    fetchTestimonials();
 
     // Dynamic import Leaflet (hanya di browser)
     const L = await import("leaflet");
@@ -276,6 +269,10 @@
 
   function order() {
     goto("/order");
+  }
+
+  function login() {
+    goto("/login");
   }
 </script>
 
@@ -327,14 +324,24 @@
           >Testimoni</a
         >
       </div>
-      <button
-        on:click={order}
-        class="md:block hidden bg-indigo-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-indigo-700 transition-colors duration-300 z-50 {showFloatingButton
-          ? 'opacity-100'
-          : 'opacity-0 pointer-events-none'}"
-      >
-        Pesan Sekarang
-      </button>
+      <div class="flex items-center space-x-1">
+        <button
+          on:click={order}
+          class="md:block hidden bg-indigo-600 text-white px-6 py-3 rounded-l-xl shadow-lg hover:bg-indigo-700 transition-colors duration-300 z-50 {showFloatingButton
+            ? 'opacity-100 cursor-pointer'
+            : 'opacity-0 pointer-events-none cursor-pointer'}"
+        >
+          Pesan Sekarang
+        </button>
+        <button
+          on:click={login}
+          class="md:block hidden bg-indigo-600 text-white px-6 py-3 shadow-lg hover:bg-indigo-700 transition-colors duration-300 z-50 {showFloatingButton
+            ? 'rounded-r-xl cursor-pointer'
+            : 'opacity-100 pointer-events-none rounded-xl cursor-pointer'}"
+        >
+          Login
+        </button>
+      </div>
 
       <!-- Tombol pesan sekarang dihilangkan dari navbar utama -->
       <div class="md:hidden">
@@ -789,12 +796,12 @@
         {#each testimonials as testimonial}
           <div class="p-8 flex flex-col items-center text-center">
             <img
-              src={testimonial.avatar}
+              src={testimonial.url_image}
               alt={testimonial.name}
               class="w-20 h-20 rounded-full mb-4 object-cover"
             />
             <p class="text-lg text-gray-600 italic mb-4">
-              "{testimonial.review}"
+              "{testimonial.content}"
             </p>
             <p class="font-semibold text-gray-800">- {testimonial.name}</p>
           </div>

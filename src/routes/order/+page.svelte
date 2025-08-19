@@ -4,12 +4,10 @@
   import { auth } from "$lib/firebase"; // Mengimpor 'auth' dari file firebase.ts
   import { browser } from "$app/environment"; // Mengimpor 'browser' dari SvelteKit
   import { goto } from "$app/navigation";
+  import hotelLogo from "$lib/images/logohotel.png";
 
   // Variabel global yang disediakan oleh lingkungan kanvas.
   // JANGAN mengubah nama atau nilainya.
-  const appId = typeof __app_id !== "undefined" ? __app_id : "default-app-id";
-  const initialAuthToken =
-    typeof __initial_auth_token !== "undefined" ? __initial_auth_token : null;
 
   // Deklarasi variabel dengan tipe eksplisit
   let fullName: string = "tes";
@@ -21,7 +19,6 @@
 
   let loading: boolean = false;
   let paymentStatus: string | null = null;
-  let authReady: boolean = false;
 
   // Status validasi sederhana dengan tipe
   type FormErrors = {
@@ -83,11 +80,6 @@
       return;
     }
 
-    if (!authReady) {
-      console.error("Authentication not ready.");
-      return;
-    }
-
     loading = true;
 
     // Hitung total harga
@@ -104,39 +96,17 @@
 
     const grossAmount: number = roomPrice * stayDuration;
 
-    // Data transaksi untuk Midtrans
-    const transactionDetails = {
-      order_id: `booking-${appId}-${Math.random().toString(36).substring(2, 9)}`,
-      gross_amount: grossAmount,
-    };
-
     const customerDetails = {
       first_name: fullName,
       email: email,
     };
 
     try {
-      const payload = {
-        transaction_details: transactionDetails,
-        customer_details: customerDetails,
-      };
-
       const apiUrl = `https://api.smarlabs.biz.id/api/files/midtrans`;
 
       const apiResponse = await fetch(apiUrl + "?gross_amount=" + grossAmount, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: `Generate a Midtrans Snap Token for the following booking: ${JSON.stringify(payload)}`,
-                },
-              ],
-            },
-          ],
-        }),
       });
 
       const result = await apiResponse.json();
@@ -175,32 +145,24 @@
   }
 
   // Muat skrip Midtrans Snap.js dan tangani otentikasi Firebase saat komponen dipasang
-  onMount(async () => {
-    // Masuk Anonim Firebase
-    try {
-      if (initialAuthToken) {
-        await signInAnonymously(auth);
-      }
-    } catch (error) {
-      console.error("Kesalahan selama masuk anonim:", error);
-    } finally {
-      authReady = true;
-    }
-
+  onMount(() => {
     // Muat skrip Midtrans Snap.js hanya di sisi klien
+    let script: HTMLScriptElement | null = null;
     if (browser) {
       const midtransScriptUrl: string =
         "https://app.sandbox.midtrans.com/snap/snap.js";
-      let script: HTMLScriptElement = document.createElement("script");
+      script = document.createElement("script");
       script.src = midtransScriptUrl;
       // GANTI 'YOUR_CLIENT_KEY' dengan kunci klien Midtrans Anda yang sebenarnya
       script.setAttribute("data-client-key", "SB-Mid-client-i-ynxgOPgCVtDkRt");
       document.body.appendChild(script);
-
-      return () => {
-        document.body.removeChild(script);
-      };
     }
+
+    return () => {
+      if (script && document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
   });
 </script>
 
@@ -219,7 +181,14 @@
   >
     <!-- Header dengan tipografi yang sederhana dan jelas -->
     <div class="text-center mb-8">
-      <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">DEMOTEL</h1>
+      <img
+        src={hotelLogo}
+        alt="Logo Sungai Musi Hotel"
+        class="mx-auto mb-4 w-20"
+      />
+      <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+        SUNGAI MUSI HOTEL
+      </h1>
       <p class="text-gray-500 font-medium">
         Nikmati pengalaman menginap terbaik dengan pemesanan mudah.
       </p>
