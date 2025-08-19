@@ -1,37 +1,85 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { or } from "firebase/firestore";
   import { onMount, onDestroy } from "svelte";
   // Impor transisi fade dari Svelte
   import { fade } from "svelte/transition";
+  import hotelLogo from "$lib/images/logohotel.png";
+  import { collection, getDocs } from "firebase/firestore";
+  import { db } from "$lib/firebase";
+  import type { Amnities, CarouselImage } from "../types";
+  import "leaflet/dist/leaflet.css"; // <-- Impor CSS Leaflet
+
+  let mapElement: HTMLElement;
+  let mapData: L.Map | null = null;
+
+  // Koordinat Sungai Musi Hotel (contoh: Jembatan Ampera, Palembang)
+  const lat = -2.9911;
+  const lng = 104.7566;
+
+  let dataCarousel: CarouselImage[] = [];
+
+  let galeriImages: CarouselImage[] = [];
+
+  let destinasiImages: CarouselImage[] = [];
+
+  let numberWhatsapp: string;
+
+  let amenities: Amnities[] = [];
+
+  async function fetchCarouselImages() {
+    try {
+      const snap = await getDocs(collection(db, "carousel"));
+      dataCarousel = snap.docs.map((doc) => doc.data() as CarouselImage);
+    } catch (error) {
+      console.error("Error fetching carousel images:", error);
+    }
+  }
+
+  async function fetchGalleryImages() {
+    try {
+      const snap = await getDocs(collection(db, "galeri"));
+      galeriImages = snap.docs.map((doc) => doc.data() as CarouselImage);
+    } catch (error) {
+      console.error("Error fetching gallery images:", error);
+    }
+  }
+
+  async function fetchContactInfo() {
+    try {
+      const snap = await getDocs(collection(db, "whatsapp"));
+      const contactData = snap.docs.map((doc) => doc.data());
+      numberWhatsapp = contactData[0]?.number || "";
+    } catch (error) {
+      console.error("Error fetching contact info:", error);
+    }
+  }
+
+  async function fetchDestinationImages() {
+    try {
+      const snap = await getDocs(collection(db, "destinasi"));
+      destinasiImages = snap.docs.map((doc) => doc.data() as CarouselImage);
+    } catch (error) {
+      console.error("Error fetching destination images:", error);
+    }
+  }
+
+  // Ambil data amnities dari Firebase
+  async function fetchAmenities() {
+    try {
+      const snap = await getDocs(collection(db, "amenities"));
+      amenities = snap.docs.map((doc) => doc.data() as Amnities);
+
+      console.log(amenities);
+    } catch (error) {
+      console.error("Error fetching amenities:", error);
+    }
+  }
 
   const hotelName = "SUNGAI MUSI HOTEL";
   const tagline = "Tempat peristirahatan Anda jauh dari hiruk pikuk kota.";
   const aboutText = `
     Selamat datang di Sungai Musi Hotel, di mana ketenangan bertemu dengan kemewahan. Terletak di jantung alam yang indah, hotel kami menawarkan pelarian yang sempurna dengan pemandangan menakjubkan, akomodasi yang nyaman, dan layanan yang tak tertandingi.
   `;
-  const amenities = [
-    {
-      name: "Kolam Renang Infinity",
-      description: "Nikmati pemandangan matahari terbenam yang menakjubkan.",
-      icon: "https://images.unsplash.com/photo-1572331165267-854da2b10ccc?q=80&w=1170&auto=format&fit=crop",
-    },
-    {
-      name: "Restoran Fine Dining",
-      description: "Hidangan lezat dari koki terkenal kami.",
-      icon: "https://plus.unsplash.com/premium_photo-1723491285855-f1035c4c703c?q=80&w=1170&auto=format&fit=crop",
-    },
-    {
-      name: "Spa & Pusat Kebugaran",
-      description: "Manjakan diri Anda dengan perawatan relaksasi.",
-      icon: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=1170&auto=format&fit=crop",
-    },
-    {
-      name: "Wi-Fi Berkecepatan Tinggi",
-      description: "Tetap terhubung di seluruh area hotel.",
-      icon: "https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=1170&auto=format&fit=crop",
-    },
-  ];
 
   const roomList = [
     {
@@ -100,53 +148,6 @@
       details:
         "Ballroom luas yang dapat menampung hingga 200 tamu. Dilengkapi dengan sistem audio-visual canggih, panggung, dan katering lengkap untuk acara besar.",
     },
-  ];
-
-  const galleryImages = [
-    "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=1170&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1575429198097-0414ec08e8cd?q=80&w=1170&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1556742393-d75f468bfcb0?q=80&w=1170&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1625244724120-1fd1d34d00f6?q=80&w=1170&auto=format&fit=crop",
-  ];
-
-  const destinasiImages = [
-    {
-      name: "Kampoeng Malaka",
-      imageUrl:
-        "https://www.meliohotels.com/storage/destination/img-20231122100103-8970.jpg",
-    },
-    {
-      name: "Tugu Kujur",
-      imageUrl:
-        "https://www.meliohotels.com/storage/destination/img-20231122100218-5398.jpg",
-    },
-    {
-      name: "Danau Shuji",
-      imageUrl:
-        "https://www.meliohotels.com/storage/destination/img-20231121133020-1733.png",
-    },
-    {
-      name: "Air Terjun Bedegung",
-      imageUrl:
-        "https://www.meliohotels.com/storage/destination/img-20231121133728-2637.png",
-    },
-    {
-      name: "Museum Batubara Bukit Asam",
-      imageUrl:
-        "https://www.meliohotels.com/storage/destination/img-20231121134143-9987.png",
-    },
-    {
-      name: "Plumeria Eco Park Muara Enim",
-      imageUrl:
-        "https://www.meliohotels.com/storage/destination/img-20231121134833-9148.png",
-    },
-  ];
-
-  const carouselImages = [
-    "https://images.unsplash.com/photo-1737234546238-9d79d1803238?q=80&w=1270&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1564501049412-61c2a3083791?q=80&w=1332&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?q=80&w=1170&auto=format&fit=crop",
-    "https://plus.unsplash.com/premium_photo-1663013625960-b54f861e4074?q=80&w=1170&auto=format&fit=crop",
   ];
 
   const testimonials = [
@@ -221,7 +222,7 @@
     if (typeof window !== "undefined") {
       autoSlide = setInterval(() => {
         // Perbaikan: Gunakan carouselImages.length di sini
-        activeIndex = (activeIndex + 1) % carouselImages.length;
+        activeIndex = (activeIndex + 1) % dataCarousel.length;
       }, 5000); // Ganti gambar setiap 5 detik
     }
   }
@@ -232,12 +233,37 @@
     }
   }
 
-  onMount(() => {
+  onMount(async () => {
     startAutoSlide();
     // Tambahkan event listener saat komponen dipasang
     if (typeof window !== "undefined") {
       window.addEventListener("scroll", handleScroll);
     }
+
+    fetchCarouselImages();
+    fetchGalleryImages();
+    fetchContactInfo();
+    fetchDestinationImages();
+    fetchAmenities();
+
+    // Dynamic import Leaflet (hanya di browser)
+    const L = await import("leaflet");
+
+    // Inisialisasi map dengan menonaktifkan kontrol zoom dan interaksi
+    mapData = L.map(mapElement).setView([lat, lng], 15);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors",
+    }).addTo(mapData);
+
+    // Tambahkan marker (penanda)
+    L.marker([lat, lng]).addTo(mapData).bindPopup("Sebuah marker.");
+
+    // Impor file CSS Leaflet
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    document.head.appendChild(link);
   });
 
   onDestroy(() => {
@@ -260,8 +286,9 @@
   <!-- Perbaikan: Tambahkan on:click untuk membuka menu seluler -->
   <nav class="fixed top-0 left-0 w-full z-50 bg-white shadow-md">
     <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <!-- logo -->
       <a href="#hero" class="text-xl font-semi-bold text-indigo-700">
-        {hotelName}
+        <img src={hotelLogo} alt="Sungai Musi Hotel" class="h-14" />
       </a>
       <div class="hidden md:flex space-x-6 text-xl">
         <a
@@ -408,10 +435,10 @@
     class="relative h-screen flex flex-col justify-center items-center text-center text-white pt-16"
   >
     <div class="absolute inset-0 z-0 overflow-hidden">
-      {#each carouselImages as image, i}
+      {#each dataCarousel as image, i}
         <div
           class="absolute inset-0 w-full h-full bg-cover bg-center transition-opacity duration-1000 ease-in-out"
-          style="background-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.5)), url('{image}'); opacity: {i ===
+          style="background-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.5)), url('{image.url_image}'); opacity: {i ===
           activeIndex
             ? 1
             : 0};"
@@ -429,9 +456,9 @@
     </div>
 
     <div
-      class="absolute top-4 right-4 z-20 flex space-x-2 bg-white bg-opacity-30 p-2 rounded-full mt-18"
+      class="absolute top-8 right-4 z-20 flex space-x-2 bg-white bg-opacity-30 p-2 rounded-full mt-18"
     >
-      {#each carouselImages as _, i}
+      {#each dataCarousel as _, i}
         <button
           on:click={() => (activeIndex = i)}
           class="w-3 h-3 rounded-full transition-colors duration-300 {i ===
@@ -554,7 +581,11 @@
           <div
             class="p-2 text-center transition-transform duration-300 hover:-translate-y-2 hover:shadow-xl"
           >
-            <img src={amenity.icon} alt={amenity.name} class="mx-auto mb-4" />
+            <img
+              src={amenity.url_image}
+              alt={amenity.name}
+              class="mx-auto mb-4"
+            />
             <h3 class="text-xl font-semibold text-gray-800 mb-2">
               {amenity.name}
             </h3>
@@ -670,10 +701,10 @@
         Lihat keindahan hotel kami melalui galeri foto.
       </p>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-        {#each galleryImages as image}
+        {#each galeriImages as image}
           <div class="overflow-hidden shadow-md">
             <img
-              src={image}
+              src={image.url_image}
               alt="Galeri Hotel"
               class="w-full object-cover transition-transform duration-300 hover:scale-105"
             />
@@ -700,7 +731,7 @@
           <div class="flex-none w-3/4 md:w-1/2 lg:w-1/3 snap-center">
             <div class="overflow-hidden">
               <img
-                src={image.imageUrl}
+                src={image.url_image}
                 alt="Galeri Hotel"
                 class="w-full h-72 md:h-96 object-cover transition-transform duration-300 hover:scale-105"
               />
@@ -772,8 +803,20 @@
     </div>
   </section>
 
+  <!-- Bagian peta yang telah diperbaiki -->
+  <section class="w-full bg-gray-50 py-12">
+    <div class="mx-auto px-4 text-center mb-8">
+      <h2 class="text-3xl font-bold text-gray-800">Lokasi Kami</h2>
+      <p class="mt-2 text-gray-600">
+        Sungai Musi Hotel terletak di jantung kota Palembang dengan akses mudah
+        ke ikon wisata.
+      </p>
+    </div>
+    <div bind:this={mapElement} class="w-full h-96"></div>
+  </section>
+
   <a
-    href="https://wa.me/628123456789?text=Halo%2C%20saya%20tertarik%20dengan%20The%20Serene%20Retreat.%20Bisa%20berikan%20informasi%20lebih%20lanjut%3F"
+    href="https://wa.me/{numberWhatsapp}?text=Halo%2C%20saya%20tertarik%20dengan%20The%20Serene%20Retreat.%20Bisa%20berikan%20informasi%20lebih%20lanjut%3F"
     target="_blank"
     class="fixed bottom-20 md:bottom-6 lg:bottom-6 right-6 flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-400 text-white px-5 py-3 rounded-full shadow-2xl hover:from-green-600 hover:to-green-500 transition-all duration-300 ring-2 ring-green-300 ring-offset-2"
     title="Hubungi Kami via WhatsApp"
@@ -783,7 +826,7 @@
 
   <footer class="bg-gray-800 text-white py-12">
     <div class="container mx-auto px-4 text-center md:text-left">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <h3 class="text-2xl font-bold mb-4">{hotelName}</h3>
           <p class="text-gray-400">
@@ -880,20 +923,6 @@
             </a>
           </div>
         </div>
-        <div>
-          <h3 class="text-xl font-semibold mb-4">Lokasi Kami</h3>
-          <div class="h-48 w-full overflow-hidden rounded-lg shadow-lg">
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.368817718012!2d106.8202583147696!3d-6.216345695508605!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f0e21a719c8f%3A0xf639a04a6e1d5a7d!2sMonas!5e0!3m2!1sen!2sid!4v1628172935274!5m2!1sen!2sid"
-              width="100%"
-              height="100%"
-              style="border:0;"
-              allowfullscreen=""
-              loading="lazy"
-              referrerpolicy="no-referrer-when-downgrade"
-            ></iframe>
-          </div>
-        </div>
       </div>
       <div class="mt-8 pt-8 border-t border-gray-700 text-center text-gray-500">
         <p>
@@ -958,7 +987,6 @@
 {/if}
 
 <style>
-  @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
   body {
     font-family: "Inter", sans-serif;
   }
