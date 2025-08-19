@@ -528,7 +528,7 @@
 
         <div class="flex-shrink-0 flex items-end">
           <button
-            class="w-full md:w-auto bg-indigo-600 text-white px-3 py-1 sm:px-6 sm:py-2 rounded-md text-sm sm:text-base font-semibold hover:bg-indigo-700 transition-colors duration-300 cursor-pointer"
+            class="w-full md:w-auto bg-indigo-600 text-white px-3 py-1 sm:px-6 sm:py-3 rounded-md text-sm sm:text-base font-semibold hover:bg-indigo-700 transition-colors duration-300 cursor-pointer"
             on:click={handleSearch}
           >
             Cari Kamar
