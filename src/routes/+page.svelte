@@ -775,7 +775,7 @@
   <a
     href="https://wa.me/628123456789?text=Halo%2C%20saya%20tertarik%20dengan%20The%20Serene%20Retreat.%20Bisa%20berikan%20informasi%20lebih%20lanjut%3F"
     target="_blank"
-    class="fixed bottom-20 right-6 flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-400 text-white px-5 py-3 rounded-full shadow-2xl hover:from-green-600 hover:to-green-500 transition-all duration-300 ring-2 ring-green-300 ring-offset-2 md:hidden"
+    class="fixed bottom-20 md:bottom-6 lg:bottom-6 right-6 flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-400 text-white px-5 py-3 rounded-full shadow-2xl hover:from-green-600 hover:to-green-500 transition-all duration-300 ring-2 ring-green-300 ring-offset-2"
     title="Hubungi Kami via WhatsApp"
   >
     <i class="fa fa-whatsapp fa-3x" aria-hidden="true"></i>
