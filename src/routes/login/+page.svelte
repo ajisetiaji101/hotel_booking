@@ -141,6 +141,15 @@
                 {/if}
             </button>
 
+            <!-- button kembali -->
+            <button
+                type="button"
+                on:click={() => goto("/")}
+                class="w-full bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-md shadow-sm hover:shadow-md hover:bg-gray-400 transition-all duration-300 ease-in-out"
+            >
+                Kembali
+            </button>
+
             <div class="text-center mt-4">
                 <!-- secured -->
                 <p class="text-sm text-gray-500">
