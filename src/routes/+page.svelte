@@ -285,10 +285,12 @@
 >
   <!-- Perbaikan: Tambahkan on:click untuk membuka menu seluler -->
   <nav class="fixed top-0 left-0 w-full z-50 bg-white shadow-md">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+    <div
+      class="container mx-auto p-2 md:px-4 md:py-4 flex justify-between items-center"
+    >
       <!-- logo -->
       <a href="#hero" class="text-xl font-semi-bold text-indigo-700">
-        <img src={hotelLogo} alt="Sungai Musi Hotel" class="h-14" />
+        <img src={hotelLogo} alt="Sungai Musi Hotel" class="h-12" />
       </a>
       <div class="hidden md:flex space-x-6 text-xl">
         <a
@@ -466,7 +468,7 @@
     </div>
 
     <div
-      class="absolute top-8 right-4 z-20 flex space-x-2 bg-white bg-opacity-30 p-2 rounded-full mt-18"
+      class="absolute top-4 right-4 z-20 flex space-x-2 bg-white bg-opacity-30 p-2 rounded-full mt-18"
     >
       {#each dataCarousel as _, i}
         <button
