@@ -16,7 +16,26 @@
   let email: string = "tes@domain.com";
   let checkin: string = "2023-10-20";
   let checkout: string = "2023-10-25";
-  let roomType: string = "superior";
+  let roomType: Room = {
+    size: "50 m²",
+    description:
+      "Desain romantis untuk pasangan yang ingin merayakan momen spesial.",
+    capacity: "2 orang dewasa",
+    image:
+      "https://plus.unsplash.com/premium_photo-1661963657190-ecdd1ca794f9?q=80&w=1129&auto=format&fit=crop",
+    kategori: "kamar",
+    price: 6000000,
+    name: "Honeymoon Suite",
+    facilities: [
+      "Tempat tidur king-size",
+      "Jacuzzi romantis",
+      "Sistem audio",
+      "Layanan kamar 24 jam",
+      "Pemandangan indah",
+    ],
+    type: "Suite",
+    id: "17PIC0Cvlt07ry6KQ0Lx",
+  };
   let terms: boolean = true;
 
   let listRooms: Room[] = [];
@@ -92,13 +111,12 @@
       deluxe: 800000,
       suite: 1500000,
     };
-    const roomPrice: number = roomRates[roomType];
     const checkinDate: Date = new Date(checkin);
     const checkoutDate: Date = new Date(checkout);
     const timeDiff: number = checkoutDate.getTime() - checkinDate.getTime();
     const stayDuration: number = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-    const grossAmount: number = roomPrice * stayDuration;
+    const grossAmount: number = roomType.price * stayDuration;
 
     const customerDetails = {
       first_name: fullName,
@@ -317,7 +335,7 @@
         >
           <option value="" disabled selected>Pilih Tipe Kamar...</option>
           {#each listRooms as room (room.id)}
-            <option value={room.id}
+            <option value={room}
               >{room.name} - Rp{room.price.toLocaleString("id-ID")}</option
             >
           {/each}
